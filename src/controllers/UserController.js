@@ -41,8 +41,10 @@ module.exports = class UserController {
     }
 
     static async update(request, response) {
-        const { id } = request.params;
-        return response.json({ status: 'Atualizar' });
+        const { userId } = request;
+        const user = await User.findByPk(userId);
+
+        return response.json(user);
     }
 
     static async destroy(request, response) {
