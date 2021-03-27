@@ -7,7 +7,7 @@ router.get('/user', index);
 router.post('/user', store);
 router.get('/user/:id', show);
 router.put('/user', verifyToken, update);
-router.delete('/user/:id', destroy);
+router.delete('/user', verifyToken, destroy);
 
 router.post('/auth/login', authenticate);
 

@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const encryptation = require('../utils/encryptation');
+const dataVerify = require('../utils/dataVerify');
 
 module.exports = class UserController {
     static async index(request, response) {
@@ -10,6 +11,15 @@ module.exports = class UserController {
 
     static async store(request, response) {
         const user = request.body;
+        const verifiedData = dataVerify.user({
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            password: user.password
+        });
+
+        if (!verifiedData.isValid) return response.status(406).json({ error: verifiedData.message });
 
         try {
             user.password = await encryptation.encrypt({ toEncrypt: user.password });
@@ -22,12 +32,14 @@ module.exports = class UserController {
         } catch (error) {
             const { errors } = error;
 
-            errors.map(itemError => {
-                if (itemError.validatorKey === 'not_unique') {
-                    if (itemError.path === 'users.username') return response.status(406).json({ error: 'This username already exists' });
-                    if (itemError.path === 'users.email') return response.status(406).json({ error: 'This email already exists' }); 
-                }
-            });
+            if (errors) {
+                errors.map(itemError => {
+                    if (itemError.validatorKey === 'not_unique') {
+                        if (itemError.path === 'users.username') return response.status(406).json({ error: 'This username already exists' });
+                        if (itemError.path === 'users.email') return response.status(406).json({ error: 'This email already exists' }); 
+                    }
+                });
+            }
         }
     }
 
@@ -41,8 +53,22 @@ module.exports = class UserController {
     }
 
     static async update(request, response) {
+        const { username, firstName, lastName, email, password } = request.body;
+        const verifiedData = dataVerify.user({ username, firstName, lastName, email, password });
+
+        if (!verifiedData.isValid) return response.status(406).json({ error: verifiedData.message });
+
         const { userId } = request;
         const user = await User.findByPk(userId);
+
+        if (username) user.username = username;
+        if (firstName) user.firstName = firstName;
+        if (lastName) user.lastName = lastName;
+        if (email) user.email = email;
+        if (password) user.password = await encryptation.encrypt({ toEncrypt: password });
+
+        user.save();
+        user.password = undefined;
 
         return response.json(user);
     }
@@ -57,6 +83,6 @@ module.exports = class UserController {
 
         deletedUser.password = undefined;
         
-        return response.json(deletedUser);``
+        return response.json(deletedUser);
     }
 }
