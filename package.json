@@ -1,7 +1,7 @@
 {
     "name": "app",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "application.js",
     "license": "MIT",
     "dependencies": {
         "dotenv": "^8.2.0",
@@ -12,6 +12,6 @@
         "sequelize-cli": "^6.2.0"
     },
     "scripts": {
-        "start": "nodemon index.js"
+        "start": "nodemon application.js"
     }
 }

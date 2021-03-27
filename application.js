@@ -9,6 +9,7 @@ const { PORT } = process.env;
 application.use(express.json());
 application.use(express.urlencoded({ extended: true }));
 
+require('./src/data/database');
 require('./src/routes')(application);
 
 application.listen(PORT, function() {
